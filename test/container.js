@@ -662,13 +662,33 @@ describe("#non-responsive container", function() {
     }, function(err, container) {
       if (err) done(err);
       testContainer = container.id;
-      done();
+      container.start(done);
     });
   });
 
   describe("#restart", function() {
     it("forced after timeout", function(done) {
-      this.timeout(30000);
+      this.timeout(10000);
+      var container = docker.getContainer(testContainer);
+      var waited = false;
+
+      function handler(err, data) {
+        expect(waited).to.be.true;
+        expect(err).to.be.null;
+        done();
+      }
+
+      container.restart({
+        t: 3
+      }, handler);
+
+      setTimeout(function() { waited = true; }, 1500);
+    });
+  });
+
+  describe("#stop", function() {
+    it("forced after timeout", function(done) {
+      this.timeout(5000);
       var container = docker.getContainer(testContainer);
 
       function handler(err, data) {
@@ -676,24 +696,8 @@ describe("#non-responsive container", function() {
         done();
       }
 
-      container.restart({
-        t: 1000
-      }, handler);
-    });
-  });
-
-  describe("#stop", function() {
-    it("forced after timeout", function(done) {
-      this.timeout(30000);
-      var container = docker.getContainer(testContainer);
-
-      function handler(err, data) {
-        expect(err).not.to.be.null;
-        done();
-      }
-
       container.stop({
-        t: 1000
+        t: 3
       }, handler);
     });
   });
